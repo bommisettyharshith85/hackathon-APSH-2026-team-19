@@ -1,0 +1,12 @@
+{
+  "name": "parcel-delivery-scheduler",
+  "version": "1.0.0",
+  "description": "DAA Hackathon - Parcel Delivery Priority Scheduler",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parcel Delivery Priority Scheduler</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f7fb;
+            color: #222;
+        }
+
+        header {
+            background: linear-gradient(135deg, #182848, #4b6cb7);
+            color: white;
+            text-align: center;
+            padding: 30px 15px;
+        }
+
+        header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 16px;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1200px;
+            margin: 25px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            color: #182848;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        button {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .add-btn {
+            background: #4b6cb7;
+            color: white;
+        }
+
+        .schedule-btn {
+            background: #182848;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .reset-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            background: #182848;
+            color: white;
+            padding: 12px;
+        }
+
+        td {
+            padding: 11px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f1f5ff;
+        }
+
+        .high {
+            background: #ffdddd;
+            color: #c0392b;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+
+        .medium {
+            background: #fff1c9;
+            color: #a66a00;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+
+        .low {
+            background: #dff5e1;
+            color: #218c3a;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 25px;
+            color: #777;
+        }
+
+        .algorithm-box {
+            line-height: 1.7;
+        }
+
+        .algorithm-box ul {
+            margin-left: 25px;
+            margin-top: 10px;
+        }
+
+        .formula {
+            background: #eef3ff;
+            padding: 15px;
+            border-left: 5px solid #4b6cb7;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .complexity {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .complexity-box {
+            background: #f4f7fb;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .complexity-box h3 {
+            color: #182848;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+        }
+
+        .stat-box h3 {
+            font-size: 28px;
+            color: #4b6cb7;
+        }
+
+        .stat-box p {
+            margin-top: 5px;
+            color: #666;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            background: #182848;
+            color: white;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 24px;
+            }
+
+            .complexity {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>📦 Parcel Delivery Priority Scheduler</h1>
+    <p>DAA Hackathon Project - Greedy Algorithm & Priority Scheduling</p>
+</header>
+
+<div class="container">
+
+    <!-- INPUT SECTION -->
+    <div class="card">
+        <h2>➕ Add Parcel</h2>
+
+        <div class="form-grid">
+
+            <div class="input-group">
+                <label>Parcel ID</label>
+                <input type="text" id="parcelId" placeholder="P101">
+            </div>
+
+            <div class="input-group">
+                <label>Destination</label>
+                <input type="text" id="destination" placeholder="Hyderabad">
+            </div>
+
+            <div class="input-group">
+                <label>Distance (km)</label>
+                <input type="number" id="distance" placeholder="20" min="1">
+            </div>
+
+            <div class="input-group">
+                <label>Urgency (1-5)</label>
+                <select id="urgency">
+                    <option value="">Select</option>
+                    <option value="1">1 - Very Low</option>
+                    <option value="2">2 - Low</option>
+                    <option value="3">3 - Medium</option>
+                    <option value="4">4 - High</option>
+                    <option value="5">5 - Critical</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Deadline (hours)</label>
+                <input type="number" id="deadline" placeholder="5" min="1">
+            </div>
+
+        </div>
+
+        <button class="add-btn" onclick="addParcel()">Add Parcel</button>
+    </div>
+
+    <!-- STATISTICS -->
+    <div class="stats">
+        <div class="stat-box">
+            <h3 id="totalParcels">0</h3>
+            <p>Total Parcels</p>
+        </div>
+
+        <div class="stat-box">
+            <h3 id="highPriority">0</h3>
+            <p>High Priority</p>
+        </div>
+
+        <div class="stat-box">
+            <h3 id="totalDistance">0 km</h3>
+            <p>Total Distance</p>
+        </div>
+    </div>
+
+    <!-- PARCEL TABLE -->
+    <div class="card">
+        <h2>📋 Parcel List</h2>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Parcel ID</th>
+                        <th>Destination</th>
+                        <th>Distance</th>
+                        <th>Urgency</th>
+                        <th>Deadline</th>
+                    </tr>
+                </thead>
+
+                <tbody id="parcelTable">
+                </tbody>
+            </table>
+        </div>
+
+        <button class="schedule-btn" onclick="generateSchedule()">
+            🚚 Generate Delivery Schedule
+        </button>
+
+        <button class="reset-btn" onclick="resetAll()">
+            🔄 Reset
+        </button>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="card">
+        <h2>🚚 Optimized Delivery Schedule</h2>
+
+        <div class="table-container">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Parcel ID</th>
+                        <th>Destination</th>
+                        <th>Distance</th>
+                        <th>Urgency</th>
+                        <th>Deadline</th>
+                        <th>Priority Score</th>
+                        <th>Priority</th>
+                    </tr>
+                </thead>
+
+                <tbody id="scheduleTable">
+                    <tr>
+                        <td colspan="8" class="empty">
+                            Add parcels and generate the delivery schedule.
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+    <!-- ALGORITHM EXPLANATION -->
+    <div class="card algorithm-box">
+
+        <h2>🧠 DAA Algorithm</h2>
+
+        <p>
+            This application uses a <b>Greedy Algorithm</b> to select parcels
+            with higher priority before lower-priority parcels.
+        </p>
+
+        <div class="formula">
+            Priority Score =
+            (Urgency × 5) +
+            (Deadline Priority × 3) -
+            (Distance × 0.5)
+        </div>
+
+        <h3>How it works:</h3>
+
+        <ul>
+            <li>Read all parcel details.</li>
+            <li>Calculate a priority score for every parcel.</li>
+            <li>Higher urgency increases the priority.</li>
+            <li>Earlier deadlines increase the priority.</li>
+            <li>Shorter distances receive a small priority advantage.</li>
+            <li>Sort parcels by priority score.</li>
+            <li>Deliver the highest-priority parcel first.</li>
+        </ul>
+
+        <br>
+
+        <h3>Greedy Approach</h3>
+
+        <p>
+            At every step, the algorithm chooses the parcel that currently
+            has the highest priority score. It does not need to calculate
+            every possible delivery sequence.
+        </p>
+
+        <div class="complexity">
+
+            <div class="complexity-box">
+                <h3>Time Complexity</h3>
+                <p><b>O(n log n)</b></p>
+                <p>Because parcels are sorted according to priority.</p>
+            </div>
+
+            <div class="complexity-box">
+                <h3>Space Complexity</h3>
+                <p><b>O(n)</b></p>
+                <p>Because the parcel list and schedule are stored.</p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<footer>
+    <p>DAA Hackathon Project | Parcel Delivery Priority Scheduler</p>
+</footer>
+
+
+<script>
+
+    // Array to store all parcels
+    let parcels = [];
+
+
+    // --------------------------------------------------
+    // SAMPLE DATA
+    // --------------------------------------------------
+
+    parcels = [
+        {
+            id: "P101",
+            destination: "Hyderabad",
+            distance: 15,
+            urgency: 5,
+            deadline: 3
+        },
+
+        {
+            id: "P102",
+            destination: "Warangal",
+            distance: 120,
+            urgency: 3,
+            deadline: 8
+        },
+
+        {
+            id: "P103",
+            destination: "Vijayawada",
+            distance: 275,
+            urgency: 4,
+            deadline: 5
+        },
+
+        {
+            id: "P104",
+            destination: "Nalgonda",
+            distance: 100,
+            urgency: 2,
+            deadline: 12
+        },
+
+        {
+            id: "P105",
+            destination: "Secunderabad",
+            distance: 10,
+            urgency: 5,
+            deadline: 2
+        },
+
+        {
+            id: "P106",
+            destination: "Guntur",
+            distance: 250,
+            urgency: 3,
+            deadline: 6
+        },
+
+        {
+            id: "P107",
+            destination: "Karimnagar",
+            distance: 165,
+            urgency: 4,
+            deadline: 4
+        }
+    ];
+
+
+    // --------------------------------------------------
+    // CALCULATE DEADLINE PRIORITY
+    // --------------------------------------------------
+
+    function getDeadlinePriority(deadline) {
+
+        /*
+            Smaller deadline means more urgent.
+
+            Example:
+            2 hours -> very high priority
+            5 hours -> high priority
+            10 hours -> medium priority
+            15+ hours -> low priority
+        */
+
+        if (deadline <= 2) {
+            return 5;
+        }
+        else if (deadline <= 4) {
+            return 4;
+        }
+        else if (deadline <= 6) {
+            return 3;
+        }
+        else if (deadline <= 10) {
+            return 2;
+        }
+        else {
+            return 1;
+        }
+    }
+
+
+    // --------------------------------------------------
+    // CALCULATE PRIORITY SCORE
+    // --------------------------------------------------
+
+    function calculateScore(parcel) {
+
+        let deadlinePriority =
+            getDeadlinePriority(parcel.deadline);
+
+        let score =
+            (parcel.urgency * 5) +
+            (deadlinePriority * 3) -
+            (parcel.distance * 0.5);
+
+        return score;
+    }
+
+
+    // --------------------------------------------------
+    // GET PRIORITY LABEL
+    // --------------------------------------------------
+
+    function getPriorityLabel(score) {
+
+        if (score >= 20) {
+            return "HIGH";
+        }
+        else if (score >= 5) {
+            return "MEDIUM";
+        }
+        else {
+            return "LOW";
+        }
+    }
+
+
+    // --------------------------------------------------
+    // ADD PARCEL
+    // --------------------------------------------------
+
+    function addParcel() {
+
+        let id =
+            document.getElementById("parcelId").value.trim();
+
+        let destination =
+            document.getElementById("destination").value.trim();
+
+        let distance =
+            Number(document.getElementById("distance").value);
+
+        let urgency =
+            Number(document.getElementById("urgency").value);
+
+        let deadline =
+            Number(document.getElementById("deadline").value);
+
+
+        // Validate input
+
+        if (
+            id === "" ||
+            destination === "" ||
+            distance <= 0 ||
+            urgency < 1 ||
+            deadline <= 0
+        ) {
+
+            alert("Please enter all parcel details correctly.");
+
+            return;
+        }
+
+
+        // Check duplicate ID
+
+        let duplicate =
+            parcels.some(parcel => parcel.id === id);
+
+        if (duplicate) {
+
+            alert("Parcel ID already exists.");
+
+            return;
+        }
+
+
+        // Create parcel object
+
+        let parcel = {
+
+            id: id,
+
+            destination: destination,
+
+            distance: distance,
+
+            urgency: urgency,
+
+            deadline: deadline
+
+        };
+
+
+        // Add parcel to array
+
+        parcels.push(parcel);
+
+
+        // Update table
+
+        displayParcels();
+
+
+        // Clear form
+
+        document.getElementById("parcelId").value = "";
+        document.getElementById("destination").value = "";
+        document.getElementById("distance").value = "";
+        document.getElementById("urgency").value = "";
+        document.getElementById("deadline").value = "";
+
+
+        alert("Parcel added successfully!");
+    }
+
+
+    // --------------------------------------------------
+    // DISPLAY PARCELS
+    // --------------------------------------------------
+
+    function displayParcels() {
+
+        let table =
+            document.getElementById("parcelTable");
+
+        table.innerHTML = "";
+
+
+        if (parcels.length === 0) {
+
+            table.innerHTML =
+                `<tr>
+                    <td colspan="5" class="empty">
+                        No parcels available.
+                    </td>
+                </tr>`;
+
+            updateStatistics();
+
+            return;
+        }
+
+
+        parcels.forEach(parcel => {
+
+            let row =
+                document.createElement("tr");
+
+            row.innerHTML = `
+
+                <td>${parcel.id}</td>
+
+                <td>${parcel.destination}</td>
+
+                <td>${parcel.distance} km</td>
+
+                <td>${parcel.urgency}</td>
+
+                <td>${parcel.deadline} hours</td>
+
+            `;
+
+            table.appendChild(row);
+
+        });
+
+
+        updateStatistics();
+    }
+
+
+    // --------------------------------------------------
+    // GENERATE DELIVERY SCHEDULE
+    // --------------------------------------------------
+
+    function generateSchedule() {
+
+        if (parcels.length === 0) {
+
+            alert("Please add at least one parcel.");
+
+            return;
+        }
+
+
+        /*
+            GREEDY ALGORITHM
+
+            Step 1:
+            Calculate priority score.
+
+            Step 2:
+            Sort parcels from highest score
+            to lowest score.
+
+            Step 3:
+            Select the highest priority
+            parcel first.
+        */
+
+        let scheduledParcels =
+            parcels.map(parcel => {
+
+                return {
+
+                    ...parcel,
+
+                    score: calculateScore(parcel)
+
+                };
+
+            });
+
+
+        // Sort by priority score
+
+        scheduledParcels.sort((a, b) => {
+
+            // Higher score first
+
+            if (b.score !== a.score) {
+
+                return b.score - a.score;
+
+            }
+
+            // If scores are equal,
+            // earlier deadline comes first
+
+            if (a.deadline !== b.deadline) {
+
+                return a.deadline - b.deadline;
+
+            }
+
+            // If deadline is also equal,
+            // shorter distance comes first
+
+            return a.distance - b.distance;
+
+        });
+
+
+        displaySchedule(scheduledParcels);
+    }
+
+
+    // --------------------------------------------------
+    // DISPLAY SCHEDULE
+    // --------------------------------------------------
+
+    function displaySchedule(schedule) {
+
+        let table =
+            document.getElementById("scheduleTable");
+
+        table.innerHTML = "";
+
+
+        schedule.forEach((parcel, index) => {
+
+            let priority =
+                getPriorityLabel(parcel.score);
+
+
+            let priorityClass =
+                priority.toLowerCase();
+
+
+            let row =
+                document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td><b>${index + 1}</b></td>
+
+                <td>${parcel.id}</td>
+
+                <td>${parcel.destination}</td>
+
+                <td>${parcel.distance} km</td>
+
+                <td>${parcel.urgency}</td>
+
+                <td>${parcel.deadline} hours</td>
+
+                <td><b>${parcel.score.toFixed(2)}</b></td>
+
+                <td>
+                    <span class="${priorityClass}">
+                        ${priority}
+                    </span>
+                </td>
+
+            `;
+
+
+            table.appendChild(row);
+
+        });
+
+    }
+
+
+    // --------------------------------------------------
+    // UPDATE STATISTICS
+    // --------------------------------------------------
+
+    function updateStatistics() {
+
+        document.getElementById("totalParcels")
+            .textContent = parcels.length;
+
+
+        let highCount = 0;
+
+        let totalDistance = 0;
+
+
+        parcels.forEach(parcel => {
+
+            let score =
+                calculateScore(parcel);
+
+
+            if (getPriorityLabel(score) === "HIGH") {
+
+                highCount++;
+
+            }
+
+
+            totalDistance += parcel.distance;
+
+        });
+
+
+        document.getElementById("highPriority")
+            .textContent = highCount;
+
+
+        document.getElementById("totalDistance")
+            .textContent =
+            totalDistance.toFixed(1) + " km";
+    }
+
+
+    // --------------------------------------------------
+    // RESET
+    // --------------------------------------------------
+
+    function resetAll() {
+
+        let confirmReset =
+            confirm("Are you sure you want to reset all parcels?");
+
+
+        if (!confirmReset) {
+
+            return;
+
+        }
+
+
+        parcels = [];
+
+
+        displayParcels();
+
+
+        document.getElementById("scheduleTable").innerHTML = `
+
+            <tr>
+
+                <td colspan="8" class="empty">
+
+                    Add parcels and generate the delivery schedule.
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+
+    // --------------------------------------------------
+    // LOAD SAMPLE DATA
+    // --------------------------------------------------
+
+    displayParcels();
+
+</script>
+
+</body>
+</html>
